@@ -21,6 +21,7 @@ app.get('/api/notes', (req, res) => {
     );
   }
   if (tag) result = result.filter(n => n.tag === tag);
+  result.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
   res.json(result);
 });
 
@@ -31,12 +32,13 @@ app.get('/api/notes/:id', (req, res) => {
 });
 
 app.post('/api/notes', (req, res) => {
-  const { title, body, tag } = req.body;
+  const { title, body, tag, pinned } = req.body;
   const note = {
     id: uuidv4(),
     title: title || '',
     body: body || '',
     tag: tag || '',
+    pinned: pinned || false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -47,12 +49,13 @@ app.post('/api/notes', (req, res) => {
 app.put('/api/notes/:id', (req, res) => {
   const idx = notes.findIndex(n => n.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Note not found' });
-  const { title, body, tag } = req.body;
+  const { title, body, tag, pinned } = req.body;
   notes[idx] = {
     ...notes[idx],
     title: title !== undefined ? title : notes[idx].title,
     body: body !== undefined ? body : notes[idx].body,
     tag: tag !== undefined ? tag : notes[idx].tag,
+    pinned: pinned !== undefined ? pinned : notes[idx].pinned,
     updatedAt: new Date().toISOString(),
   };
   res.json(notes[idx]);
